@@ -1,0 +1,1 @@
+# Implementacja komendy: `mamdani predict ...`

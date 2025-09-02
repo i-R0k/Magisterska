@@ -1,0 +1,1 @@
+# Mierzenie czasu, proste profile

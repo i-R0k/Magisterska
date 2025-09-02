@@ -1,0 +1,13 @@
+var input service 3.0 5.0
+var output food 7.0 9.0
+mf service t1 tri 3.0 3.0 4.0
+mf service t2 tri 3.0 4.0 5.0
+mf service t3 tri 4.0 5.0 5.0
+mf food t1 tri 7.0 7.0 8.0
+mf food t2 tri 7.0 8.0 9.0
+mf food t3 tri 8.0 9.0 9.0
+rule IF service is t1 THEN food is t1
+tnorm min
+snorm max
+mode FIT
+defuzz centroid

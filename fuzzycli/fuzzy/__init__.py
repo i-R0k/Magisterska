@@ -1,0 +1,1 @@
+# Pakiet fuzzy (logika domeny)

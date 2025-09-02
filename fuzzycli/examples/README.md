@@ -1,0 +1,1 @@
+# Jak uruchomić przykład tipper

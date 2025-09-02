@@ -1,0 +1,36 @@
+# Model: 2 wejścia, 1 wyjście, kilka reguł
+
+# Example Mamdani fuzzy system: "tipper"
+
+# --- variables ---
+var input  quality   0 10
+var input  service   0 10
+var output tip       0 30
+
+# --- membership functions for inputs ---
+mf quality low       tri   0  0  5
+mf quality medium    tri   2  5  8
+mf quality high      tri   5 10 10
+
+mf service low       tri   0  0  5
+mf service medium    tri   2  5  8
+mf service high      tri   5 10 10
+
+# --- membership functions for output ---
+mf tip low           trap  0  0  5 10
+mf tip medium        tri   8  15  22
+mf tip high          trap  20 25 30 30
+
+# --- rules ---
+rule IF quality is high AND service is high THEN tip is high
+rule IF quality is medium AND service is high THEN tip is medium
+rule IF quality is low AND service is low THEN tip is low
+
+# --- operators and settings ---
+tnorm min
+snorm max
+implication mamdani
+aggregation max
+defuzz centroid grid 0 30 201
+mode FIT
+dtype float32
