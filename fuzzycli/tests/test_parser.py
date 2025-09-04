@@ -1,1 +1,0 @@
-# Testy parsera `.fz`
