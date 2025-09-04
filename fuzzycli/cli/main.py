@@ -6,14 +6,22 @@ import sys
 from pathlib import Path
 from ..fuzzy.io.fz_parser import parse_fz
 from ..fuzzy.model.engine import MamdaniEngine
+from ..fuzzy.core import norms as _norms
 
 def cmd_validate(args):
     kb = parse_fz(args.model)
     print(f"OK: inputs={len(kb.inputs)}, outputs={len(kb.outputs)}, rules={len(kb.rules)}")
     print(f"tnorm={kb.tnorm}, snorm={kb.snorm}, mode={kb.mode}, defuzz={kb.defuzz}")
 
+def _use_ansi():
+    return sys.stdout.isatty()
+
 def _ansi(mu: float) -> str:
-    # proste kolory: szary <0.2, zolty <0.5, zielony >=0.5
+    if not _use_ansi():
+        # bez kolorów zwróć tylko label (formatowanie wykonane gdzieś indziej)
+        if mu >= 0.5: return ""
+        if mu >= 0.2: return ""
+        return ""
     if mu >= 0.5: return "\x1b[32m"  # green
     if mu >= 0.2: return "\x1b[33m"  # yellow
     return "\x1b[90m"                # grey
