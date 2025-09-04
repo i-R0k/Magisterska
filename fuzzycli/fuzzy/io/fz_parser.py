@@ -87,26 +87,31 @@ def parse_fz(path: str) -> KnowledgeBase:
             kb.snorm = tok[1].lower()
         elif head == "mode":
             kb.mode = tok[1].upper()
+        
         elif head == "defuzz":
-            if tok[1].lower() != "centroid":
-                raise ValueError("Only centroid supported in MVP")
+            # formy:
+            #   defuzz centroid
+            #   defuzz centroid grid <ymin> <ymax> <n>
+            #   defuzz centroid n <N>
+            #   defuzz mom
+            #   defuzz bisector
+            method = tok[1].lower()
+            if method not in ("centroid", "mom", "bisector"):
+                raise ValueError("Supported defuzz: centroid | mom | bisector")
+            kb.defuzz = method
             if len(tok) >= 3 and tok[2].lower() == "grid":
-                # defuzz centroid grid ymin ymax n
                 ymin = float(tok[3]); ymax = float(tok[4]); n = int(tok[5])
                 for ov in kb.outputs.values():
                     ov.grid = (ymin, ymax, n)
             elif len(tok) >= 3 and tok[2].lower() == "n":
-                # defuzz centroid n N  -> tylko liczba punktow siatki,
-                # zakres zostanie dobrany automatycznie w engine
                 n = int(tok[3])
                 for ov in kb.outputs.values():
                     ymin, ymax, _ = ov.grid
                     ov.grid = (ymin, ymax, n)
             else:
-                # defuzz centroid -> tryb automatyczny
-                # engine sam wybierze zakres [ymin,ymax] z MF wyjscia,
-                # a n ustawi na wartosc domyslna (np. 201)
+                # auto: engine wybierze zakres i n
                 pass
+        
         elif head == "dtype":
             pass  # placeholder; single-precision handling can be added later
         elif head in ("aggregation", "implication"):
