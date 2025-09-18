@@ -1,1 +1,0 @@
-# Implementacja komendy: `mamdani repl ...`

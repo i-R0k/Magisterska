@@ -1,0 +1,41 @@
+var input SepalLengthCm 4.228 7.972
+var input SepalWidthCm 1.952 4.448
+var input PetalLengthCm 0.882 7.018000000000001
+var input PetalWidthCm 0.052000000000000005 2.548
+var output Species -0.04 2.04
+mf SepalLengthCm small gauss 4.228 0.9359999999999999
+mf SepalLengthCm medium gauss 6.1 0.9359999999999999
+mf SepalLengthCm large gauss 7.972 0.9359999999999999
+mf SepalWidthCm small gauss 1.952 0.6240000000000001
+mf SepalWidthCm medium gauss 3.2 0.6240000000000001
+mf SepalWidthCm large gauss 4.448 0.6240000000000001
+mf PetalLengthCm small gauss 0.882 1.5340000000000003
+mf PetalLengthCm medium gauss 3.9500000000000006 1.5340000000000003
+mf PetalLengthCm large gauss 7.018000000000001 1.5340000000000003
+mf PetalWidthCm small gauss 0.052000000000000005 0.624
+mf PetalWidthCm medium gauss 1.3 0.624
+mf PetalWidthCm large gauss 2.548 0.624
+mf Species setosa gauss -0.04 0.52
+mf Species versicolor gauss 1.0 0.52
+mf Species virginica gauss 2.04 0.52
+rule IF SepalLengthCm is small AND SepalWidthCm is medium AND PetalLengthCm is small AND PetalWidthCm is small THEN Species is setosa weight 0.9320788156158037
+rule IF SepalLengthCm is medium AND SepalWidthCm is large AND PetalLengthCm is small AND PetalWidthCm is small THEN Species is setosa weight 0.7161302969876447
+rule IF SepalLengthCm is medium AND SepalWidthCm is medium AND PetalLengthCm is small AND PetalWidthCm is small THEN Species is setosa weight 0.6775732881077864
+rule IF SepalLengthCm is small AND SepalWidthCm is small AND PetalLengthCm is small AND PetalWidthCm is small THEN Species is setosa weight 0.7284795501668702
+rule IF SepalLengthCm is medium AND SepalWidthCm is medium AND PetalLengthCm is medium AND PetalWidthCm is medium THEN Species is versicolor weight 0.8703698400877967
+rule IF SepalLengthCm is medium AND SepalWidthCm is small AND PetalLengthCm is medium AND PetalWidthCm is medium THEN Species is versicolor weight 0.8184652006195015
+rule IF SepalLengthCm is small AND SepalWidthCm is small AND PetalLengthCm is medium AND PetalWidthCm is medium THEN Species is versicolor weight 0.6055054780422015
+rule IF SepalLengthCm is medium AND SepalWidthCm is medium AND PetalLengthCm is large AND PetalWidthCm is large THEN Species is virginica weight 0.7696760918270303
+rule IF SepalLengthCm is medium AND SepalWidthCm is medium AND PetalLengthCm is medium AND PetalWidthCm is medium THEN Species is virginica weight 0.5859190447815351
+rule IF SepalLengthCm is large AND SepalWidthCm is medium AND PetalLengthCm is large AND PetalWidthCm is large THEN Species is virginica weight 0.7014633366208937
+rule IF SepalLengthCm is medium AND SepalWidthCm is medium AND PetalLengthCm is large AND PetalWidthCm is medium THEN Species is virginica weight 0.4156904182680282
+rule IF SepalLengthCm is small AND SepalWidthCm is small AND PetalLengthCm is medium AND PetalWidthCm is medium THEN Species is virginica weight 0.40010102463679587
+rule IF SepalLengthCm is large AND SepalWidthCm is medium AND PetalLengthCm is large AND PetalWidthCm is medium THEN Species is virginica weight 0.44627559166334274
+rule IF SepalLengthCm is medium AND SepalWidthCm is small AND PetalLengthCm is large AND PetalWidthCm is medium THEN Species is virginica weight 0.29220952783128146
+rule IF SepalLengthCm is medium AND SepalWidthCm is medium AND PetalLengthCm is medium AND PetalWidthCm is large THEN Species is virginica weight 0.5941958176074476
+rule IF SepalLengthCm is medium AND SepalWidthCm is small AND PetalLengthCm is medium AND PetalWidthCm is large THEN Species is virginica weight 0.33294536116820955
+rule IF SepalLengthCm is medium AND SepalWidthCm is small AND PetalLengthCm is medium AND PetalWidthCm is medium THEN Species is virginica weight 0.6884810674727675
+tnorm prod
+snorm max
+mode FIT
+defuzz centroid

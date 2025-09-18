@@ -1,0 +1,21 @@
+{
+  "inputs": [
+    "SepalLengthCm",
+    "SepalWidthCm",
+    "PetalLengthCm",
+    "PetalWidthCm"
+  ],
+  "output": "Species",
+  "ignored": [
+    "Id"
+  ],
+  "label_maps": {
+    "Species": {
+      "Iris-setosa": 0,
+      "Iris-versicolor": 1,
+      "Iris-virginica": 2
+    }
+  },
+  "source_csv": "fuzzycli/examples/Iris.csv",
+  "header_mode": true
+}

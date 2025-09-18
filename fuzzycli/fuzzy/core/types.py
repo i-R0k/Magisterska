@@ -1,5 +1,3 @@
-# Alias typów, stałe, wyjątki domenowe
-
 from dataclasses import dataclass
 from typing import Dict, List, Tuple, Optional
 

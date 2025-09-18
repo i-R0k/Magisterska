@@ -72,6 +72,23 @@ def s_lukasiewicz(vals: Iterable[Float]) -> Float:
             return 1.0
     return s  # min(1, sum)
 
+def s_sum(vals: Iterable[Float]) -> Float:
+    it = iter(vals)
+    try: s = float(next(it))
+    except StopIteration: return 0.0
+    for v in it:
+        v = float(v)
+        s = s + v - s*v  # algebraic sum
+    return s
+
+def s_bsum(vals: Iterable[Float]) -> Float:
+    it = iter(vals)
+    try: s = float(next(it))
+    except StopIteration: return 0.0
+    for v in it:
+        s = min(1.0, s + float(v))  # bounded sum
+    return s
+
 def _s_hamacher_pair(a: Float, b: Float) -> Float:
     a = float(a); b = float(b)
     if a == 1.0 and b == 1.0:
@@ -104,6 +121,8 @@ TNORMS = {
 }
 SNORMS = {
     "max": s_max,
+    "prob": s_prob,
+    "bsum": s_bsum,
     "prob": s_prob,
     "lukasiewicz": s_lukasiewicz,
     "hamacher": s_hamacher,

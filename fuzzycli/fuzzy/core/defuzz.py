@@ -32,7 +32,6 @@ def centroid_adaptive(ymin: Float, ymax: Float, mu: Callable[[Float], Float],
         if ws[i] >= ws[i - 1] and ws[i] >= ws[i + 1] and ws[i] > 0:
             peaks.append(ys[i])
 
-    # dogęszczenie
     yall = ys[:]
     rng = ymax - ymin
     win = max(1e-9, window_frac * rng)

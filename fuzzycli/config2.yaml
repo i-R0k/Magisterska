@@ -1,0 +1,76 @@
+project:
+  name: "Iris demo"
+  paths:
+    data_dir: "."
+    out_dir: "."
+  engine:
+    tnorm: "prod"
+    snorm: "max"
+    mode: "FIT"
+    defuzz: "centroid"
+    # defuzz_grid:
+    #   n: 501
+    #   # lub:
+    #   # ymin: 0.0
+    #   # ymax: 1.0
+    #   # n: 501
+
+prepare:
+  enabled: true
+  csv: "fuzzycli/examples/Iris.csv"
+  in_cols: "SepalLengthCm,SepalWidthCm,PetalLengthCm,PetalWidthCm"
+  out_col: "Species"
+  ignore_cols: "Id"
+  num_cols: ""
+  str_cols: ""
+  out: "fuzzycli/examples/iris_prepared.csv"
+  mapping: "fuzzycli/examples/labels.json"
+
+mf:
+  mode: "auto_from_data"     # auto_from_data | manual
+  default:
+    shape: "gauss"             # tri | trap | gauss
+    terms: 3
+    range_margin: 0.02
+    trapezoid:
+      plateau_ratio: 0.25
+    gaussian:
+      sigma_mode: "factor"   # factor | fwhm | fixed
+      sigma_value: 0.5
+  per_variable:
+    Species:
+      labels: ["setosa", "versicolor", "virginica"]
+
+learn:
+  enabled: true
+  csv: "fuzzycli/examples/iris_prepared.csv"
+  out: "fuzzycli/examples/iris_model.fz"
+  terms: 3
+  partition: "grid"
+  tnorm: "prod"
+  snorm: "max"
+  min_weight: 0.0
+
+show:
+  enabled: true
+  model: "fuzzycli/examples/iris_model.fz"
+  at: "SepalLengthCm=5.1,SepalWidthCm=3.5,PetalLengthCm=1.4,PetalWidthCm=0.2"
+  fired_only: true
+  min_alpha: 0.0
+  include_inactive: false
+
+apply:
+  enabled: true
+  model: "fuzzycli/examples/iris_model.fz"
+  csv: "fuzzycli/examples/iris_prepared.csv"
+  out: "fuzzycli/examples/preds.csv"
+  encoding: "label"
+  ignore_cols: ""
+  in_cols: ""
+
+run:
+  order:
+    - prepare
+    - learn
+    - show
+    - apply

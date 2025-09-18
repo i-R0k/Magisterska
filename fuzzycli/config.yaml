@@ -1,0 +1,202 @@
+# =========================
+#  FuzzyCLI – konfiguracja (pełna)
+# =========================
+# Ten plik to „pośredni” tryb między CLI a GUI: wszystkie ustawienia, opisy i przykłady
+# w jednym miejscu. Sekcje możesz włączać/wyłączać (enabled: true/false).
+
+# ---- META / global ----
+project:
+  name: "Iris demo"            # dowolna nazwa projektu
+  paths:
+    data_dir: "."              # katalog z danymi
+    out_dir: "."               # katalog na wyniki/model
+  engine:                      # globalne (opcjonalne) ustawienia silnika – trafią do .fz
+    # T-norma (składanie poprzedników):
+    #   min | prod | lukasiewicz | hamacher
+    tnorm: "prod"
+
+    # S-norma (agregacja po implikacji):
+    #   max | sum (algebraic) | bsum (bounded) | prob (alias algebraic) | lukasiewicz | hamacher
+    snorm: "max"
+
+    # Tryb Mamdaniego:
+    #   FIT  – cięcie per reguła, potem wspólna agregacja
+    #   FATI – agregacja siły per etykieta, potem jednokrotne cięcie
+    mode: "FIT"
+
+    # Defuzyfikacja:
+    #   centroid | centroid_adaptive | mom (Mean of Maxima) | bisector
+    defuzz: "centroid"
+
+    # Globalna siatka do defuzz (opcjonalnie; jeśli nie podasz, użyje grid z OutputVariable):
+    #  - podaj „n” dla gęstości (np. 501), albo pełny zakres + n
+    defuzz_grid:
+      # n: 501
+      # ymin: 0.0
+      # ymax: 1.0
+
+# ---------------------
+# 1) Przygotowanie danych
+# ---------------------
+prepare:
+  enabled: true
+  # Plik wejściowy (CSV lub TXT z przecinkami)
+  csv: "Iris.csv"
+
+  # Role/wybór kolumn:
+  #  - in_cols: nazwy lub indeksy ("A,B" | "0,1")
+  #  - out_col: jedna nazwa lub indeks
+  #  - ignore_cols: kolumny do pominięcia (opcjonalnie)
+  in_cols: "SepalLengthCm,SepalWidthCm,PetalLengthCm,PetalWidthCm"
+  out_col: "Species"
+  ignore_cols: "Id"
+
+  # Typy (opcjonalnie). Gdy puste – wykryje automatycznie na próbce:
+  num_cols: ""                 # np. "0,1,2" lub "SepalLengthCm,PetalWidthCm"
+  str_cols: ""                 # np. "Species"
+
+  # Pliki wyjściowe
+  out: "iris_prepared.csv"     # numeryczny CSV (wejścia + wyjście)
+  mapping: "labels.json"       # metadane + mapa etykiet (dla kolumn tekstowych)
+
+  # Uwaga: aktualna implementacja robi label-encoding dla tekstowego wyjścia.
+  # Skalowanie liczb możesz dodać później (w tej chwili zapis „as-is”).
+
+# ---------------------
+# 2) Ustawienia MF (kto tworzy funkcje przynależności)
+# ---------------------
+mf:
+  mode: "auto_from_data"     # auto_from_data | manual
+  # === USTAWIENIA GLOBALNE (domyślne) ===
+  default:
+    shape: "tri"             # tri | trap | gauss
+    terms: 3                 # >=2
+    partition: "grid"        # grid | quantiles | kmeans   (na start: grid)
+    range_strategy: "data"   # data | fixed
+    range_margin: 0.02       # 2% marginesu poza min/max z danych
+    trapezoid:
+      plateau_ratio: 0.25    # [0..1] proporcja „półki” do kroku
+    gaussian:
+      sigma_mode: "factor"   # factor | fwhm | fixed
+      sigma_value: 0.5       # factor: sigma = value * step
+                              # fwhm : sigma = FWHM / (2*sqrt(2*ln 2)) z FWHM=value*step
+                              # fixed: sigma = value
+
+  # === NADPISANIA PER-ZMIENNA ===
+  per_variable:
+    SepalLengthCm:
+      shape: "gauss"
+      terms: 5
+      gaussian:
+        sigma_mode: "fwhm"
+        sigma_value: 1.0
+    PetalWidthCm:
+      shape: "trap"
+      plateau_ratio: 0.30     # alias do default.trapezoid.plateau_ratio
+
+  # === DEFINICJE „manual” (precyzyjne MF z configu) ===
+  # Używane tylko gdy mf.mode == manual (lub dla wybranej zmiennej nadpisują auto)
+  explicit:
+    SepalWidthCm:
+      - label: "narrow"  # trapez
+        trap: [2.0, 2.0, 2.5, 3.0]
+      - label: "mid"
+        trap: [2.5, 3.0, 3.2, 3.6]
+      - label: "wide"
+        trap: [3.2, 3.8, 4.4, 4.4]
+    Species:              # przykład dla wyjścia (klasy)
+      - label: "setosa"     tri: [0.0, 0.0, 1.0]
+      - label: "versicolor" tri: [0.0, 1.0, 2.0]
+      - label: "virginica"  tri: [1.0, 2.0, 2.0]
+
+
+# ---------------------
+# 3) Nauka reguł (Wang–Mendel)
+# ---------------------
+learn:
+  enabled: true
+  csv: "iris_prepared.csv"     # dane po prepare
+  out: "iris_model.fz"         # wynikowy plik modelu (MF + reguły + ustawienia)
+
+  # MF – tylko gdy mf.mode == auto_from_data:
+  #  - terms: liczba trójkątów na zmienną (3 ⇒ small/medium/large)
+  #  - partition: metoda dzielenia zakresu (aktualnie „grid”)
+  terms: 3                     # int ≥ 2 (np. 3, 5)
+  partition: "grid"            # na ten moment obsługiwany „grid”
+
+  # Ograniczanie liczby reguł:
+  topk_per_output: 0           # 0 = bez limitu; 3 = max 3 reguły na etykietę wyjścia
+  rule_cap: 0                  # 0 = bez limitu globalnego; N = twardy limit łączny
+  min_weight: 0.0              # odetnij reguły słabe (siła < min_weight)
+  # weight_norm: "unit"        # (opcjonalnie) przeskaluj wagi do [0,1] względem max
+
+  # Ustawienia silnika (trafią do .fz; jeśli Twoja wersja CLI nie przyjmuje ich w learn – i tak wstawi je parser .fz)
+  tnorm: "prod"
+  snorm: "max"
+  mode: "FIT"
+  # defuzz – zwykle nie jest flagą learn; ustaw globalnie w project.engine
+
+# ---------------------
+# 4) Podgląd / inspekcja modelu
+# ---------------------
+show:
+  enabled: true
+  model: "iris_model.fz"
+
+  # Wejście do obliczenia μ/α (akceptuje też listę "x=..","y=.."):
+  at: "SepalLengthCm=5.1,SepalWidthCm=3.5,PetalLengthCm=1.4,PetalWidthCm=0.2"
+
+  # Filtry reguł:
+  fired_only: true             # pokazuj tylko reguły, które „odpaliły” w tym punkcie
+  min_alpha: 0.0               # próg α
+  include_inactive: false      # domyślnie NIE pokazujemy inactive
+
+# ---------------------
+# 5) Batch predykcja
+# ---------------------
+apply:
+  enabled: true
+  model: "iris_model.fz"
+  csv: "iris_prepared.csv"
+  out: "preds.csv"             # wynik batch (wejścia + wyjście)
+
+# ---------------------
+# 6) Pojedyncza predykcja
+# ---------------------
+predict:
+  enabled: false               # włącz, jeśli chcesz pojedyncze zapytanie
+  model: "iris_model.fz"
+  at: "SepalLengthCm=6.0,SepalWidthCm=3.0,PetalLengthCm=4.8,PetalWidthCm=1.8"
+  print_rules: false           # jeśli chcesz dodatkowo wypisać reguły jak w 'show'
+  fired_only: true             # (gdy print_rules) filtruj tylko odpalone
+  min_alpha: 0.0               # (gdy print_rules) próg α
+  include_inactive: false
+
+# ---------------------
+# 7) Wyjaśnienie decyzji
+# ---------------------
+explain:
+  enabled: false
+  model: "iris_model.fz"
+  at: "SepalLengthCm=6.0,SepalWidthCm=3.0,PetalLengthCm=4.8,PetalWidthCm=1.8"
+  topk: 5                      # top-K reguł „napędzających” wynik
+  include_inactive: false
+  min_alpha: 0.0
+
+# ---------------------
+# 8) Walidacja modelu
+# ---------------------
+validate:
+  enabled: false
+  model: "iris_model.fz"
+  strict: false                # dodatkowe checki spójności (jeśli dostępne)
+
+# ---------------------
+# 9) Pipeline (kolejność wykonania)
+# ---------------------
+run:
+  order:
+    - prepare
+    - learn
+    - show
+    - apply
